@@ -18,7 +18,7 @@ from tqdm import tqdm
 package_path = Path(...)  # TODO: change to elmneuron path
 sys.path.insert(0, str(package_path))
 
-from src.expressive_leaky_memory_neuron import ELM
+from src.expressive_leaky_memory_neuron import GIADA_L4P1
 from src.neuronio.neuronio_data_loader import NeuronIO
 from src.neuronio.neuronio_data_utils import (
     NEURONIO_DATA_DIM,
@@ -216,8 +216,8 @@ if __name__ == "__main__":
         save_fig_path=str(artefacts_dir / "training_batch.png"),
     )
 
-    # Initialize the ELM model
-    model = ELM(**model_config).to(torch_device)
+    # Initialize the GIADA model
+    model = GIADA_L4P1(**model_config).to(torch_device)
 
     # Initialize the loss function, optimizer, and scheduler
     criterion = NeuronioLoss()
@@ -226,7 +226,7 @@ if __name__ == "__main__":
         optimizer, T_max=train_config["batches_per_epoch"] * train_config["num_epochs"]
     )
 
-    # Visualize ELM model
+    # Visualize GIADA model
     print(model)
 
     ########## TEAINING ##########
