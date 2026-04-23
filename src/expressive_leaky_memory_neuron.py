@@ -127,8 +127,7 @@ class GIADA_L4P1(nn.Module):
         num_apical = self.num_branch - self.apical_start
         self.g1_proj = nn.Linear(self.num_branch, self.g1, bias=True)
         self.g2_thresh = ThresholdUnit(self.num_branch, self.g2, gain_init=5.0)
-        self.g3_proj = nn.Linear(self.g2, self.g3, bias=False)
-        self.g3_threshold = nn.Parameter(torch.zeros(self.g3))
+        self.g3_proj = nn.Linear(self.g2, self.g3, bias=True)
         self.g4_thresh = ThresholdUnit(num_apical + self.g1, self.g4, gain_init=3.0)
         self.g5_proj = nn.Linear(self.g1, self.g5, bias=True)
         self.w_y = nn.Linear(self.dm, self.num_output, bias=True)
@@ -185,7 +184,7 @@ class GIADA_L4P1(nn.Module):
         return kappa_s, kappa_m
 
     def _group3_activation(self, x: torch.Tensor) -> torch.Tensor:
-        return torch.sigmoid(x - self.g3_threshold)
+        return torch.tanh(x)
 
     def dynamics(
         self,
