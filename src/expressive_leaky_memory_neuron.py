@@ -128,6 +128,7 @@ class GIADA_L4P1(nn.Module):
         self.g1_proj = nn.Linear(self.num_branch, self.g1, bias=True)
         self.g2_thresh = ThresholdUnit(self.num_branch, self.g2, gain_init=5.0)
         self.g3_proj = nn.Linear(self.g2, self.g3, bias=True)
+        self.g3_threshold = nn.Parameter(torch.full((self.g3,), 2.5))
         self.g4_thresh = ThresholdUnit(num_apical + self.g1, self.g4, gain_init=3.0)
         self.g5_proj = nn.Linear(self.g1, self.g5, bias=True)
         self.w_y = nn.Linear(self.dm, self.num_output, bias=True)
@@ -183,8 +184,8 @@ class GIADA_L4P1(nn.Module):
         kappa_m = torch.exp(-self.delta_t / tau_m)
         return kappa_s, kappa_m
 
-    def _group3_sigmoid(self, x: torch.Tensor) -> torch.Tensor:
-        return 1.0 / (1.0 + torch.exp(-3.3 * (x - 2.5)))
+    def _group3_activation(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.sigmoid(x - self.g3_threshold)
 
     def dynamics(
         self,
@@ -209,7 +210,7 @@ class GIADA_L4P1(nn.Module):
         delta_g2 = self.g2_thresh(branches) * 2.0 - 1.0
 
         g2_activity = m_dec_groups[1] + delta_g2
-        delta_g3 = self._group3_sigmoid(self.g3_proj(g2_activity))
+        delta_g3 = self._group3_activation(self.g3_proj(g2_activity))
 
         apical_branches = branches[:, self.apical_start :]
         g1_activity = m_dec_groups[0] + delta_g1
